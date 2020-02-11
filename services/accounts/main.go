@@ -10,6 +10,7 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/grpc/codes"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 
@@ -52,7 +53,7 @@ func (s *Server) GetAccount (ctx context.Context, req *pb.GetAccountRequest) (*p
 	if err != nil {
 		return nil, status.Error(
 			codes.InvalidArgument,
-			fmt.Sprintf("[-] Could not convert to ObjectID: %v",err)
+			fmt.Sprintf("[-] Could not convert to ObjectID: %v",err),
 		)
 	}
 
@@ -62,17 +63,17 @@ func (s *Server) GetAccount (ctx context.Context, req *pb.GetAccountRequest) (*p
 	if err = result.Decode(&data); err != nil{
 		return nil, status.Errorf(
 			codes.NotFound,
-			fmt.Sprintf("[-] Could not find account with ObjectID %s: %v", req.GetID(), err)
+			fmt.Sprintf("[-] Could not find account with ObjectID %s: %v", req.GetId(), err),
 		)
 	}
 
 	response := &pb.GetAccountResponse{
 		Account: &pb.Account {
-			Id: oid.Hex()
+			Id: oid.Hex(),
 			Username: data.Username,
 			Password: data.Password,
-			Email: data.Email
-		}
+			Email: data.Email,
+		},
 	}
 
 	return response, nil
@@ -85,15 +86,15 @@ func (s *Server) DeleteAccount (ctx context.Context, req *pb.DeleteAccountReques
 	if err != nil {
 		return nil, status.Error(
 			codes.InvalidArgument,
-			fmt.Sprintf("[-] Could not convert to ObjectID: %v",err)
+			fmt.Sprintf("[-] Could not convert to ObjectID: %v",err),
 		)
 	}
 
-	err := db.DeleteAccountFromDB(client, ctx, oid)
+	err = db.DeleteAccountFromDB(client, ctx, oid)
 	if err != nil {
 		return nil, status.Errorf(
 			codes.NotFound,
-			fmt.Sprintf("[-] Could not find/delete Account with ObjectID %s: %v", red.GetId(), err)
+			fmt.Sprintf("[-] Could not find/delete Account with ObjectID %s: %v", req.GetId(), err),
 		)
 	}
 	fmt.Println("[+] Account has been deleted from the database")
@@ -104,15 +105,14 @@ func (s *Server) DeleteAccount (ctx context.Context, req *pb.DeleteAccountReques
 
 }
 
-func (s *Server) UpdateAccount (ctx context.Context, req *pb.UpdateAccountRequest) (*pb.UpdateAccountResponse, error)
-{
+func (s *Server) UpdateAccount (ctx context.Context, req *pb.UpdateAccountRequest) (*pb.UpdateAccountResponse, error){
 	account := req.GetAccount()
 	
 	oid, err := primitive.ObjectIDFromHex(account.GetId())
-	id err != nil {
+	if err != nil {
 		return nil, status.Errorf(
 			codes.InvalidArgument,
-			fmt.Sprintf("[-] Could not convert to ObjectID: %v",err)
+			fmt.Sprintf("[-] Could not convert to ObjectID: %v",err),
 		)
 	}
 
@@ -121,14 +121,14 @@ func (s *Server) UpdateAccount (ctx context.Context, req *pb.UpdateAccountReques
 		"password": account.GetPassword(),
 		"email": account.GetEmail(),
 	}
-	result := UpdateAccountInDB(client, ctx, oid, update)
+	result := db.UpdateAccountInDB(client, ctx, oid, update)
 	
 	decoded := db.AccountItem{}
 	err = result.Decode(&decoded)
 	if err != nil {
 		return nil, status.Errorf(
 			codes.NotFound,
-			fmt.Sprintf("[-] Could not find Account with supplied ID %s: %v", oid, err)
+			fmt.Sprintf("[-] Could not find Account with supplied ID %s: %v", oid, err),
 		)
 	}
 
@@ -138,15 +138,17 @@ func (s *Server) UpdateAccount (ctx context.Context, req *pb.UpdateAccountReques
 			Username: decoded.Username,
 			Password: decoded.Password,
 			Email: decoded.Email,
-		}
+		},
 	}, nil
 
 }
-
+/*
 func (s *Server) StreamAccounts(req *api.StreamAccountsRequest, stream api.AccountService_StreamAccountsServer) error {
 
-}
+	data := &db.AccountItem
 
+}
+*/
 func main() {
 	client = db.ConnectToDB()
 	fmt.Println("Hello World")

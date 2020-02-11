@@ -6,6 +6,7 @@ import (
 	"log"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -50,14 +51,14 @@ func InsertAccountToTheDatabase(client *mongo.Client, ctx context.Context, data 
 	return insertResult, err
 }
 
-func GetAccountFromDB(client *mongo.Client, ctx context.Context, oid string) *mongo.SingleResult {
+func GetAccountFromDB(client *mongo.Client, ctx context.Context, oid primitive.ObjectID) *mongo.SingleResult {
 
 	collection := client.Database(DBNAME).Collection("accounts")
 	result := collection.FindOne(ctx, bson.M{"_id": oid})
 	return result
 }
 
-func DeleteAccountFromDB(client *mongo.Client, ctx context.Context, oid string) error {
+func DeleteAccountFromDB(client *mongo.Client, ctx context.Context, oid primitive.ObjectID) error {
 
 	collection := client.Database(DBNAME).Collection("accounts")
 	result, err := collection.DeleteOne(ctx, bson.M{"_id": oid})
@@ -67,7 +68,7 @@ func DeleteAccountFromDB(client *mongo.Client, ctx context.Context, oid string) 
 
 }
 
-func UpdateOneInDB(client *mongo.Client, ctx context.Context, oid string, update bson.M) *mongo.SingleResult {
+func UpdateAccountInDB(client *mongo.Client, ctx context.Context, oid primitive.ObjectID, update bson.M) *mongo.SingleResult {
 
 	collection := client.Database(DBNAME).Collection("accounts")
 	filter := bson.M{"_id": oid}
