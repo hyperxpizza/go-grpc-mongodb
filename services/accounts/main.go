@@ -22,6 +22,7 @@ type Server struct {
 }
 
 func (s *Server) InsertAccount (ctx context.Context, req *pb.InsertAccountRequest) (*pb.InsertAccountResponse, error){
+	
 	account := req.GetAccount()
 	data := db.AccountItem{
 		//ID empty, so it gets omitted
@@ -54,9 +55,52 @@ func (s *Server) GetAccount (ctx context.Context, req *pb.GetAccountRequest) (*p
 			fmt.Sprintf("[-] Could not convert to ObjectID: %v",err)
 		)
 	}
+
+	data := db.AccountItem{}
+
+	result := db.GetAccountFromDB(client, ctx, oid)
+	if err = result.Decode(&data); err != nil{
+		return nil, status.Errorf(
+			codes.NotFound,
+			fmt.Sprintf("[-] Could not find account with ObjectID %s: %v", req.GetID(), err)
+		)
+	}
+
+	response := &pb.GetAccountResponse{
+		Account: &pb.Account {
+			Id: oid.Hex()
+			Username: data.Username,
+			Password: data.Password,
+			Email: data.Email
+		}
+	}
+
+	return response, nil
+
 }
 
 func (s *Server) DeleteAccount (ctx context.Context, req *pb.DeleteAccountRequest) (*pb.DeleteAccountResponse, error){
+
+	oid, err := primitive.ObjectIDFromHex(req.GetId())
+	if err != nil {
+		return nil, status.Error(
+			codes.InvalidArgument,
+			fmt.Sprintf("[-] Could not convert to ObjectID: %v",err)
+		)
+	}
+
+	err := db.DeleteAccountFromDB(client, ctx, oid)
+	if err != nil {
+		return nil, status.Errorf(
+			codes.NotFound,
+			fmt.Sprintf("[-] Could not find/delete Account with ObjectID %s: %v", red.GetId(), err)
+		)
+	}
+	fmt.Println("[+] Account has been deleted from the database")
+
+	return &pb.DeleteAccountResponse{
+		Success: true,
+	}, nil
 
 }
 
@@ -66,7 +110,7 @@ func (s *Server) UpdateAccount (ctx context.Context, req *pb.UpdateAccountReques
 }
 
 func (s *Server) StreamAccounts(req *api.StreamAccountsRequest, stream api.AccountService_StreamAccountsServer) error {
-	
+
 }
 
 func main() {
