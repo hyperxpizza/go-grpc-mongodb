@@ -50,10 +50,19 @@ func InsertAccountToTheDatabase(client *mongo.Client, ctx context.Context, data 
 	return insertResult, err
 }
 
-func GetAccountFromDB(client *mongo.Client, ctx context.Context, oid string) AccountItem {
+func GetAccountFromDB(client *mongo.Client, ctx context.Context, oid string) *mongo.SingleResult {
 
 	collection := client.Database(DBNAME).Collection("accounts")
+	result := collection.FindOne(ctx, bson.M{"_id": oid})
+	return result
+}
 
-	err := collection.Find(bson.M{"_id": oid})
+func DeleteAccountFromDB(client *mongo.Client, ctx context.Context, oid string) error {
+
+	collection := client.Database(DBNAME).Collection("accounts")
+	result, err := collection.DeleteOne(ctx, bson.M{"_id": oid})
+	fmt.Println(result)
+
+	return err
 
 }
