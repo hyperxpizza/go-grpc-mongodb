@@ -3,10 +3,13 @@ package main
 import (
 	"fmt"
 	"context"
+	"net"
+	"log"
 	
 	pb "git.mip-consult.de/sde/suzuki-framework/microservices/api/proto/v1"
 	db "git.mip-consult.de/sde/suzuki-framework/microservices/pkg/database"
 
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/status"
 	"google.golang.org/grpc/codes"
 
@@ -185,8 +188,21 @@ func (s *Server) StreamAccounts(req *pb.StreamAccountsRequest, stream pb.Account
 	return nil
 }
 
+const port = ":8080"
+
 func main() {
-	client = db.ConnectToDB()
-	fmt.Println("Hello World")
-	db.CloseConnectionToDB(client)
+	fmt.Println("[*] Starting Server...")
+	lis, err := net.Listen("tcp", port)
+	if err != nil{
+		log.Fatalf("[-] net.Listen error: %v", err)
+	}
+
+	fmt.Println("[*] Listening on port :8080")
+	
+	s := grpc.NewServer()
+	pb.RegisterAccountsServer(s, &Server{})
+	if err = s.Serve(lis); err != nil {
+		log.Fatalf("[-] Serve error: %v", err)
+	}
+
 }
