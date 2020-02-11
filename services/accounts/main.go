@@ -142,13 +142,49 @@ func (s *Server) UpdateAccount (ctx context.Context, req *pb.UpdateAccountReques
 	}, nil
 
 }
-/*
-func (s *Server) StreamAccounts(req *api.StreamAccountsRequest, stream api.AccountService_StreamAccountsServer) error {
 
-	data := &db.AccountItem
+func (s *Server) StreamAccounts(req *pb.StreamAccountsRequest, stream pb.AccountService_StreamAccountsServer) error {
 
+	data := &db.AccountItem{}
+	collection := client.Database(db.DBNAME).Collection("accounts")
+
+	cursor, err := collection.Find(context.Background(), bson.M{})
+	if err != nil {
+		return status.Errorf{
+			codes.Internal,
+			fmt.Sprintf("[-] Unknown Internal error: %v", err),
+		}
+	}
+
+	defer cursor.Close(context.Background())
+	for cursor.Next(context.Background()){
+		err := cursor.Decode(&data)
+		if err != nil{
+			return status.Errorf(
+				codes.Unavailable,
+				fmt.Sprintf("[-] Could not decode data: %v", err),
+			)
+		}
+
+		stream.Send(&pb.StreamAccountsRequest{
+			Account: &pb.Account{
+				Id: data.ID.Hex(),
+				Username: data.Username,
+				Password: data.Password,
+				Email: data.Email,
+			},
+		})
+	}
+	if err = cursor.Err(); err != nil {
+		return status.Errorf(
+			codes.Internal,
+			fmt.Sprintf("[-] Cursor Error: %v", err),
+		)
+	}
+
+	return nil
 }
-*/
+
 func main() {
 	client = db.ConnectToDB()
 	fmt.Println("Hello World")
