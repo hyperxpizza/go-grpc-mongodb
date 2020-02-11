@@ -1,0 +1,63 @@
+//protoc -I api/ api/product.proto --go_out=plugins=grpc:.
+
+syntax = "proto3";
+package products;
+option go_package = "api";
+
+message Product{
+    string id = 1;
+    string name = 2;
+    int32 price = 3;
+    string description = 4;
+}
+
+// POST
+message InsertProductRequest{
+    Product product = 1;
+}
+
+message InsertProductResponse{
+    Product product = 1;
+}
+
+//GET
+message GetProductRequest{
+    string id = 1;
+}
+
+message GetProductResponse{
+    Product product = 1;
+}
+
+// DELETE 
+message DeleteProductRequest {
+    string id = 1;
+}
+
+message DeleteProductResponse {
+    bool success = 1;
+}
+
+// UPDATE
+message UpdateProductRequest {
+    Product product = 1;
+}
+
+message UpdateProductResponse {
+    Product product = 1;
+}
+
+// Stream
+message StreamProductsRequest {}
+
+message StreamProductsResponse{
+    Product product = 1;
+}
+
+service ProductService {
+    rpc InsertProduct(InsertProductRequest) returns (InsertProductResponse) {};
+    rpc GetProduct(GetProductRequest) returns (GetProductResponse) {};
+    rpc DeleteProduct (DeleteProductRequest) returns (DeleteProductResponse) {};
+    rpc UpdateProduct(UpdateProductRequest) returns (UpdateProductResponse) {}; 
+    rpc StreamProducts (StreamProductsRequest) returns (stream StreamProductsResponse) {};
+}
