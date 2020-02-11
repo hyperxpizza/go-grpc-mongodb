@@ -66,3 +66,13 @@ func DeleteAccountFromDB(client *mongo.Client, ctx context.Context, oid string) 
 	return err
 
 }
+
+func UpdateOneInDB(client *mongo.Client, ctx context.Context, oid string, update bson.M) *mongo.SingleResult {
+
+	collection := client.Database(DBNAME).Collection("accounts")
+	filter := bson.M{"_id": oid}
+	result := collection.FindOneAndUpdate(ctx, filter, bson.M{"$set": update}, options.FindOneAndUpdate().SetReturnDocument(1))
+
+	return result
+
+}

@@ -106,6 +106,40 @@ func (s *Server) DeleteAccount (ctx context.Context, req *pb.DeleteAccountReques
 
 func (s *Server) UpdateAccount (ctx context.Context, req *pb.UpdateAccountRequest) (*pb.UpdateAccountResponse, error)
 {
+	account := req.GetAccount()
+	
+	oid, err := primitive.ObjectIDFromHex(account.GetId())
+	id err != nil {
+		return nil, status.Errorf(
+			codes.InvalidArgument,
+			fmt.Sprintf("[-] Could not convert to ObjectID: %v",err)
+		)
+	}
+
+	update := bson.M {
+		"username": account.GetUsername(),
+		"password": account.GetPassword(),
+		"email": account.GetEmail(),
+	}
+	result := UpdateAccountInDB(client, ctx, oid, update)
+	
+	decoded := db.AccountItem{}
+	err = result.Decode(&decoded)
+	if err != nil {
+		return nil, status.Errorf(
+			codes.NotFound,
+			fmt.Sprintf("[-] Could not find Account with supplied ID %s: %v", oid, err)
+		)
+	}
+
+	return &pb.UpdateAccountResponse{
+		Account: &pb.Account{
+			Id: decoded.ID.Hex(),
+			Username: decoded.Username,
+			Password: decoded.Password,
+			Email: decoded.Email,
+		}
+	}, nil
 
 }
 
