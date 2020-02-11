@@ -1,0 +1,63 @@
+// protoc -I pb/accounts.go --go_out=plugins=grpc:.
+
+syntax = "proto3";
+package account;
+option go_package = "api";
+
+message Account {
+    string id = 1;
+    string username = 2;
+    string password =3;
+    string email = 4;
+}
+
+//InsertAccount service
+message InsertAccountRequest {
+    Account account = 1;
+}
+
+message InsertAccountResponse {
+    Account account = 1;
+}
+
+//UpdateAccount Service
+message UpdateAccountRequest{
+    Account account = 1;
+}
+
+message UpdateAccountResponse{
+    Account account = 1;
+}
+
+//GetAccount Service
+message GetAccountRequest {
+    string id = 1;
+}
+
+message GetAccountResponse {
+    Account account = 1;
+}
+
+//DeleteAccount Service
+message DeleteAccountRequest{
+    string id = 1;
+}
+
+message DeleteAccountResponse {
+    bool success = 1;
+}
+
+//StreamAccounts Service
+message StreamAccountsRequest {}
+
+message StreamAccountsResponse {
+    Account account = 1;
+}
+
+service AcccountService {
+    rpc InsertAccount(InsertAccountRequest) returns (InsertAccountResponse) {};
+    rpc GetAccount (GetAccountRequest) returns (GetAccountResponse) {};
+    rpc DeleteAccount (DeleteAccountRequest) returns (DeleteAccountResponse) {};
+    rpc UpdateAccount (UpdateAccountRequest) returns (UpdateAccountResponse) {};
+    rpc StreamAccounts (StreamAccountsRequest) returns (stream StreamAccountsResponse) {};
+}
