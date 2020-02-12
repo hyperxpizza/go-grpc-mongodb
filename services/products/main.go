@@ -30,3 +30,23 @@ func (s *Server)
 func main(){
 
 }
+
+func (s *Server) InsertProduct (ctx context.Context, req *pb.InsertProductRequest) (*pb.InsertProductResponse, error){
+
+}
+
+func (s *Server) GetProduct (ctx context.Context, req *pb.GetProductRequest) (*pb.GetProductResponse, error) {
+
+}
+
+func (s *Server) DeleteProduct (ctx context.Context, req *pb.DeleteProductRequest) (*pb.DeleteProductResponse, error){
+
+}
+
+func (s *Server) UpdateProduct (ctx context.Context, req *pb.UpdateProductRequest) (*pb.UpdateProductResponse, error) {
+
+}
+
+func (s *Server) StreamProducts (req *pb.StreamProductsRequest, stream pb.StreamProductsService_StremProductsServer) error {
+	
+}
