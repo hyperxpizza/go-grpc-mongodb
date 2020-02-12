@@ -145,30 +145,25 @@ func (s *Server) UpdateAccount(ctx context.Context, req *pb.UpdateAccountRequest
 
 }
 
-func (s *Server) StreamAccounts(req *pb.StreamAccountsRequest, stream pb.AccountsService_StreamAccountsServer) error {
+func (s *Server) StreamAccounts(req *pb.StreamAccountsRequest, stream pb.AcccountService_StreamAccountsServer) error {
 
 	data := &db.AccountItem{}
 	collection := client.Database(db.DBNAME).Collection("accounts")
 
 	cursor, err := collection.Find(context.Background(), bson.M{})
 	if err != nil {
-		return status.Errorf{
-			codes.Internal,
-			fmt.Sprintf("[-] Unknown Internal error: %v", err),
-		}
+		return err
 	}
 
 	defer cursor.Close(context.Background())
 	for cursor.Next(context.Background()) {
 		err := cursor.Decode(&data)
 		if err != nil {
-			return status.Errorf(
-				codes.Unavailable,
-				fmt.Sprintf("[-] Could not decode data: %v", err),
-			)
+			return err
+
 		}
 
-		stream.Send(&pb.StreamAccountsRequest{
+		stream.Send(&pb.StreamAccountsResponse{
 			Account: &pb.Account{
 				Id:       data.ID.Hex(),
 				Username: data.Username,
@@ -199,7 +194,7 @@ func main() {
 	fmt.Println("[*] Listening on port :8080")
 
 	s := grpc.NewServer()
-	pb.RegisterAccountsServiceServer(s, &Server{})
+	pb.RegisterAcccountServiceServer(s, &Server{})
 	if err = s.Serve(lis); err != nil {
 		log.Fatalf("[-] Serve error: %v", err)
 	}
