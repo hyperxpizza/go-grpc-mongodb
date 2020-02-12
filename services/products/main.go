@@ -139,8 +139,41 @@ func (s *Server) UpdateProduct(ctx context.Context, req *pb.UpdateProductRequest
 	}, nil
 }
 
-func (s *Server) StreamProducts(req *StreamProductsRequest, srv ProductService_StreamProductsServer) error {
+func (s *Server) StreamProducts(req *StreamProductsRequest, stream ProductService_StreamProductsServer) error {
 
+	data := &db.ProductItem{}
+	collection := client.Database(db.DBNAME).Collection("products")
+
+	cursor, err := collection.Find(context.Background(), bson.M{})
+	if err != nil {
+		return err
+	}
+
+	defer cursor.Close(context.Background())
+	for cursor.Next(context.Background()) {
+		if err != nil {
+			return err
+		}
+
+		stream.Send(&pb.StreamProductsResponse{
+			Product: &pb.Product{
+				Id:          data.ID.Hex(),
+				Name:        data.Name,
+				Price:       data.Price,
+				Description: data.Description,
+			},
+		})
+
+		if err = cursor.Err(); err != nil {
+			return status.Errorf(
+				codes.Internal,
+				fmt.Sprintf("[-] Cursor Error: %v", err),
+			)
+		}
+
+	}
+
+	return nil
 }
 
 const port = ":8080"
