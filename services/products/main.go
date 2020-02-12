@@ -139,11 +139,10 @@ func (s *Server) UpdateProduct(ctx context.Context, req *pb.UpdateProductRequest
 	}, nil
 }
 
-/*
-func (s *Server) StreamProducts(req *pb.StreamProductsRequest, stream pb.StreamProductsService_StremProductsServer) error {
+func (s *Server) StreamProducts(req *StreamProductsRequest, srv ProductService_StreamProductsServer) error {
 
 }
-*/
+
 const port = ":8080"
 
 func main() {

@@ -1,0 +1,15 @@
+scalar Time
+
+type Account {
+    id: String!
+    username: String!
+    password: String!
+    email: String!
+}
+
+type Product {
+    id: String!
+    Name: String!
+    Price: Int!
+    Description: String!
+}
