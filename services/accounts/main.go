@@ -53,7 +53,7 @@ func (s *Server) GetAccount(ctx context.Context, req *pb.GetAccountRequest) (*pb
 
 	oid, err := primitive.ObjectIDFromHex(req.GetId())
 	if err != nil {
-		return nil, status.Error(
+		return nil, status.Errorf(
 			codes.InvalidArgument,
 			fmt.Sprintf("[-] Could not convert to ObjectID: %v", err),
 		)
@@ -199,7 +199,7 @@ func main() {
 	fmt.Println("[*] Listening on port :8080")
 
 	s := grpc.NewServer()
-	pb.RegisterAccountsServer(s, &Server{})
+	pb.RegisterAccountsServiceServer(s, &Server{})
 	if err = s.Serve(lis); err != nil {
 		log.Fatalf("[-] Serve error: %v", err)
 	}

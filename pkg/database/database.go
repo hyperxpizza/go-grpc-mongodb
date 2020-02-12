@@ -77,3 +77,37 @@ func UpdateAccountInDB(client *mongo.Client, ctx context.Context, oid primitive.
 	return result
 
 }
+
+func InsertProductToTheDB(ctx context.Context, client *mongo.Client, data ProductItem) (*mongo.InsertOneResult, error) {
+
+	collection := client.Database(DBNAME).Collection(("products"))
+	insertResult, err := collection.InsertOne(ctx, data)
+	return insertResult, err
+}
+
+func GetProductFromDB(ctx context.Context, client *mongo.Client, oid primitive.ObjectID) *mongo.SingleResult {
+
+	collection := client.Database(DBNAME).Collection("products")
+	result := collection.FindOne(ctx, bson.M{"_id": oid})
+	return result
+}
+
+func DeleteProductFromDB(ctx context.Context, client *mongo.Client, oid primitive.ObjectID) error {
+
+	collection := client.Database(DBNAME).Collection("products")
+
+	result, err := collection.DeleteOne(ctx, bson.M{"_id": oid})
+	fmt.Println(result)
+
+	return err
+
+}
+
+func UpdateProductInDB(ctx context.Context, client *mongo.Client, oid primitive.ObjectID, update bson.M) *mongo.SingleResult {
+
+	collection := client.Database(DBNAME).Collection("products")
+	filter := bson.M{"_id": oid}
+	result := collection.FindOneAndUpdate(ctx, filter, bson.M{"$set": update}, options.FindOneAndUpdate().SetReturnDocument(1))
+
+	return result
+}
