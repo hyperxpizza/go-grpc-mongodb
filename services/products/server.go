@@ -178,19 +178,15 @@ func (s *Server) StreamProducts(req *StreamProductsRequest, stream ProductServic
 
 const port = ":8080"
 
-func main() {
-	fmt.Println("[*] Starting Server...")
-	lis, err := net.Listen("tcp", port)
+func ListenGRPC(s Service, port int) error {
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
-		log.Fatalf("[-] net.Listen error: %v", err)
+		return err
 	}
 
-	fmt.Println("[*] Listening on port :8080")
+	serv := grpc.NewServer()
+	pb.RegisterProductServiceServer(serv, &grpcServer{s})
+	reflection.Register(serv)
 
-	s := grpc.NewServer()
-	pb.RegisterProductServiceServer(s, &Server{})
-	if err = s.Serve(lis); err != nil {
-		log.Fatalf("[-] Serve error: %v", err)
-	}
-
+	return serv.Serve(lis)
 }

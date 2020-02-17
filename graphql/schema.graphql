@@ -1,15 +1,15 @@
 scalar Time
 
 type Account {
-    id: String!
-    username: String!
-    password: String!
-    email: String!
+    ID: ID!
+    Username: String!
+    Password: String!
+    Email: Email!
 }
 
 type Product {
-    id: String!
+    ID: ID!
     Name: String!
-    Price: Int!
+    Price: Float!
     Description: String!
 }

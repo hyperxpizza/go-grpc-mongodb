@@ -1,4 +1,4 @@
-package main
+package accounts
 
 import (
 	"context"
@@ -11,6 +11,7 @@ import (
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/reflection"
 	"google.golang.org/grpc/status"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -21,7 +22,7 @@ import (
 var client *mongo.Client
 
 type Server struct {
-	pb.UnimplementedAcccountServiceServer
+	service Service
 }
 
 func (s *Server) InsertAccount(ctx context.Context, req *pb.InsertAccountRequest) (*pb.InsertAccountResponse, error) {
@@ -171,32 +172,28 @@ func (s *Server) StreamAccounts(req *pb.StreamAccountsRequest, stream pb.Acccoun
 				Email:    data.Email,
 			},
 		})
-	}
-	if err = cursor.Err(); err != nil {
-		return status.Errorf(
-			codes.Internal,
-			fmt.Sprintf("[-] Cursor Error: %v", err),
-		)
-	}
 
+		if err = cursor.Err(); err != nil {
+			return status.Errorf(
+				codes.Internal,
+				fmt.Sprintf("[-] Cursor Error: %v", err),
+			)
+		}
+	}
 	return nil
 }
 
 const port = ":8080"
 
-func main() {
-	fmt.Println("[*] Starting Server...")
-	lis, err := net.Listen("tcp", port)
+func ListenGRPC(s Service, port int) error {
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
-		log.Fatalf("[-] net.Listen error: %v", err)
+		return err
 	}
 
-	fmt.Println("[*] Listening on port :8080")
+	serv := grpc.NewServer()
+	pb.RegisterAcccountServiceServer(serv, &grpcServer{s})
+	reflection.Register(serv)
 
-	s := grpc.NewServer()
-	pb.RegisterAcccountServiceServer(s, &Server{})
-	if err = s.Serve(lis); err != nil {
-		log.Fatalf("[-] Serve error: %v", err)
-	}
-
+	return serv.Serve(lis)
 }
