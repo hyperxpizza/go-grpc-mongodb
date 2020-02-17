@@ -177,6 +177,7 @@ func (s *Server) StreamProducts(req *StreamProductsRequest, stream ProductServic
 }
 
 func ListenGRPC(s Service, port int) error {
+	client = db.ConnectToDB()
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
 		return err
