@@ -183,8 +183,6 @@ func (s *Server) StreamAccounts(req *pb.StreamAccountsRequest, stream pb.Acccoun
 	return nil
 }
 
-const port = ":8080"
-
 func ListenGRPC(s Service, port int) error {
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
